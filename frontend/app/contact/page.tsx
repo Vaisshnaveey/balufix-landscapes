@@ -4,10 +4,46 @@ import { useState } from "react";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+
+    try {
+      const res = await fetch(
+        "https://balufix-landscapes.onrender.com/contact",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to submit");
+
+      setSubmitted(true);
+      setFormData({ name: "", email: "", phone: "", message: "" });
+    } catch (err) {
+      alert("Server error. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -57,33 +93,46 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <input
                   required
+                  name="name"
                   placeholder="Name"
+                  value={formData.name}
+                  onChange={handleChange}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-green-500"
                 />
 
                 <input
                   required
+                  name="email"
                   type="email"
                   placeholder="Email"
+                  value={formData.email}
+                  onChange={handleChange}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-green-500"
                 />
 
                 <input
+                  name="phone"
                   placeholder="Phone"
+                  value={formData.phone}
+                  onChange={handleChange}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-green-500"
                 />
 
                 <textarea
+                  name="message"
                   rows={4}
                   placeholder="Message"
+                  value={formData.message}
+                  onChange={handleChange}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-green-500"
                 />
 
                 <button
                   type="submit"
+                  disabled={loading}
                   className="w-full bg-green-600 text-black py-4 rounded-lg font-semibold hover:bg-green-500 transition"
                 >
-                  Send Message
+                  {loading ? "Sending..." : "Send Message"}
                 </button>
               </form>
             ) : (
