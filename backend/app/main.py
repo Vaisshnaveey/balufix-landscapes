@@ -6,13 +6,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, SessionLocal, Base
 from app.models.lead import Lead
 
+# Create DB tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+# ✅ CORS FIX FOR LOCAL + VERCEL + RENDER
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://balufix-landscapes.vercel.app",
+        "https://balufix-landscapes.onrender.com",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -58,7 +64,6 @@ def submit_contact(
         "status": "saved",
         "id": new_lead.id
     }
-
 
 @app.get("/leads")
 def get_leads(db: Session = Depends(get_db)):
